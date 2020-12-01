@@ -1,4 +1,4 @@
-import express, { Router, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import fs from 'fs';
 import { filterImageFromURL, deleteLocalFiles } from './util/util';
@@ -20,8 +20,6 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
     let imageBody = req.query;
 
     //check if a url was supplied
-    console.log(req.query);
-    console.log(imageBody);
     if (!imageBody.image_url) {
       return res.status(400).send('Please provide and image url');
     }
@@ -44,49 +42,36 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
 
     }
     //break off the url from the object
-    const url: string = imageBody.image_url;
-    const filteredpath: string = await filterImageFromURL(url);
-    console.log('print this');
-
-    console.log(filteredpath)
+    const filteredpath: string = await filterImageFromURL(imageBody.image_url);
 
     //if the request is successful, return the image
     res.status(200).sendFile(filteredpath);
 
-    let toDelete: string[];
+    //Provided helper function to delete files doesn't work as expected, so made modifications
 
-    //fs.readdir(filteredpath)
+    //This provides the directory path
+    let localDirectory: string = __dirname + '/util/tmp/';
 
-});
-// @TODO1 IMPLEMENT A RESTFUL ENDPOINT
-// GET /filteredimage?image_url={{URL}}
-// endpoint to filter an image from a public url.
-// IT SHOULD
-//    1
-//    1. validate the image_url query
-//    2. call filterImageFromURL(image_url) to filter the image
-//    3. send the resulting file in the response
-//    4. deletes any files on the server on finish of the response
-// QUERY PARAMATERS
-//    image_url: URL of a publicly accessible image
-// RETURNS
-//   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
-
-/**************************************************************************** */
-
-//! END @TODO1
-
-// Root Endpoint
-// Displays a simple message to the user
-app.get("/", async (req, res) => {
-  console.log('Run that code');
-  res.send("try GET /filteredimage?image_url={{}}")
-});
+    //call to modified deletion function. See src/util/util.ts for details
+    deleteLocalFiles(localDirectory);
 
 
-// Start the Server
-app.listen(port, () => {
-  console.log(`server running http://localhost:${port}`);
-  console.log(`press CTRL+C to stop server`);
-});
-}) ();
+  });
+
+
+  // Root Endpoint
+  // Displays a simple message to the user
+  app.get("/", async (req, res) => {
+    console.log('Run that code');
+    res.send("try GET /filteredimage?image_url={{}}")
+  });
+
+
+  // Start the Server
+  app.listen(port, () => {
+    console.log(`server running http://localhost:${port}`);
+    console.log(`press CTRL+C to stop server`);
+  });
+})();
+
+
